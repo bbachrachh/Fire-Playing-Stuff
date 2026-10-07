@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Now Playing</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;height:100dvh}
+body{background:#f4f4f0;color:#111;font-family:Georgia,"Times New Roman",serif;display:flex;justify-content:center;align-items:center;overflow:hidden;-webkit-tap-highlight-color:transparent}
+#app{width:100%;max-width:850px;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:4vh 6vw}
+#art-wrap{position:relative;width:min(60vh,72vw,500px);height:min(60vh,72vw,500px);margin-bottom:3vh;overflow:hidden;background:#111}
+#art{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(100%)}
+#pixel-transition{position:absolute;inset:0;display:grid;grid-template-columns:repeat(16,1fr);grid-template-rows:repeat(16,1fr);pointer-events:none;opacity:0;filter:grayscale(100%)}
+.pixel{opacity:0;background-repeat:no-repeat;transition-property:opacity;transition-timing-function:steps(4,end)}
+#label{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:3px;font-weight:bold;margin-bottom:1.2vh;text-align:center}
+#title{font-size:clamp(24px,4vw,38px);line-height:1.1;text-align:center;margin:0;max-width:90vw}
+#artist{font-size:clamp(17px,2.5vw,23px);margin-top:9px;text-align:center;font-style:italic}
+#album{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1px;margin-top:8px;opacity:.65;text-align:center}
+#progress-container{width:min(60vh,72vw,500px);height:2px;background:#c8c8c4;margin-top:2.5vh;overflow:hidden}
+#progress{width:0%;height:100%;background:#111;transition:width .5s linear}
+#status{font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:2px;margin-top:1.2vh;opacity:.5;text-align:center}
+#login{border:1px solid #111;background:transparent;color:#111;padding:12px 20px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:2px;cursor:pointer;margin-top:1.5vh}
+#fshint{position:fixed;bottom:6px;left:0;right:0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:2px;opacity:.35}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="art-wrap">
+    <img id="art" src="" alt="Album artwork">
+    <div id="pixel-transition"></div>
+  </div>
+  <div id="label">NOW PLAYING</div>
+  <h1 id="title">Nothing Playing</h1>
+  <div id="artist"></div>
+  <div id="album"></div>
+  <div id="progress-container"><div id="progress"></div></div>
+  <div id="status">WAITING</div>
+  <button id="login" class="hidden">CONNECT TO SPOTIFY</button>
+</div>
+<div id="fshint">TAP ANYWHERE FOR FULLSCREEN</div>
+
+<script>
+const CLIENT_ID = "008a9939e20e4eb8b1da4eae05f91fce";
+const REDIRECT_URI = "https://bbachrachh.github.io/Fire-Playing-Stuff/";
+const SCOPES = "user-read-currently-playing user-read-playback-state";
+
+const $ = id => document.getElementById(id);
+const art=$("art"), pixelTransition=$("pixel-transition"), title=$("title"),
+      artist=$("artist"), album=$("album"), progress=$("progress"),
+      status=$("status"), loginButton=$("login"), fshint=$("fshint");
+
+let accessToken=null, currentTrackId=null, currentTrack=null, lastProgress=0, lastProgressTime=0;
+
+/* ---------- FULLSCREEN (tap anywhere) ---------- */
+function goFullscreen(){
+  const el=document.documentElement;
+  const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen;
+  if(req){ try{ const p=req.call(el); if(p&&p.catch)p.catch(()=>{}); }catch(e){} }
+}
+function inFullscreen(){
+  return !!(document.fullscreenElement||document.webkitFullscreenElement);
+}
+function syncHint(){ fshint.classList.toggle("hidden", inFullscreen()); }
+document.addEventListener("fullscreenchange",syncHint);
+document.addEventListener("webkitfullscreenchange",syncHint);
+document.addEventListener("click",e=>{
+  if(e.target===loginButton)return;
+  if(!inFullscreen())goFullscreen();
+});
+
+/* ---------- PKCE ---------- */
+function randomString(n){
+  const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const v=crypto.getRandomValues(new Uint8Array(n));
+  let r="";
+  for(let i=0;i<n;i++)r+=chars[v[i]%chars.length];
+  return r;
+}
+async function sha256(s){ return crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)); }
+function b64url(buf){
+  return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
+async function login(){
+  const verifier=randomString(64);
+  const challenge=b64url(await sha256(verifier));
+  localStorage.setItem("spotify_verifier",verifier);
+  const params=new URLSearchParams({
+    client_id:CLIENT_ID, response_type:"code", redirect_uri:REDIRECT_URI,
+    scope:SCOPES, code_challenge_method:"S256", code_challenge:challenge
+  });
+  window.location.href="https://accounts.spotify.com/authorize?"+params.toString();
+}
+loginButton.addEventListener("click",login);
+
+async function exchangeCode(code){
+  const body=new URLSearchParams({
+    client_id:CLIENT_ID, grant_type:"authorization_code", code:code,
+    redirect_uri:REDIRECT_URI, code_verifier:localStorage.getItem("spotify_verifier")
+  });
+  const res=await fetch("https://accounts.spotify.com/api/token",{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:body
+  });
+  if(!res.ok){ console.error(await res.text()); throw new Error("Token exchange failed"); }
+  const data=await res.json();
+  accessToken=data.access_token;
+  localStorage.setItem("spotify_access_token",accessToken);
+}
+
+async function checkCallback(){
+  const code=new URLSearchParams(window.location.search).get("code");
+  if(code){
+    try{
+      await exchangeCode(code);
+      window.history.replaceState({},document.title,window.location.pathname);
+    }catch(err){
+      console.error(err);
+      status.textContent="LOGIN ERROR";
+      return false;
+    }
+  }
+  accessToken=accessToken||localStorage.getItem("spotify_access_token");
+  return !!accessToken;
+}
+
+/* ---------- PIXEL TRANSITION ---------- */
+function createPixelGrid(url){
+  pixelTransition.innerHTML="";
+  const cols=16, rows=16, pixels=[];
+  for(let y=0;y<rows;y++){
+    for(let x=0;x<cols;x++){
+      const p=document.createElement("div");
+      p.className="pixel";
+      p.style.backgroundImage='url("'+url+'")';
+      p.style.backgroundSize=(cols*100)+"% "+(rows*100)+"%";
+      p.style.backgroundPosition=((x/(cols-1))*100)+"% "+((y/(rows-1))*100)+"%";
+      pixelTransition.appendChild(p);
+      pixels.push(p);
+    }
+  }
+  return pixels;
+}
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+async function pixelFadeTo(url){
+  await new Promise(r=>{ const im=new Image(); im.onload=r; im.onerror=r; im.src=url; });
+  const pixels=createPixelGrid(url);
+  pixelTransition.style.opacity="1";
+  const order=shuffle(pixels.map((_,i)=>i));
+  pixels.forEach(p=>{ p.style.opacity="0"; p.style.transitionDuration="420ms"; });
+  order.forEach((idx,i)=>{
+    const delay=(i/order.length)*650+Math.random()*180;
+    setTimeout(()=>{ pixels[idx].style.opacity="1"; },delay);
+  });
+  await new Promise(r=>setTimeout(r,1050));
+  art.src=url;
+  pixelTransition.style.opacity="0";
+  setTimeout(()=>{ pixelTransition.innerHTML=""; },100);
+}
+
+/* ---------- SONG INFO ---------- */
+function showNothing(){
+  title.textContent="Nothing Playing";
+  artist.textContent="";
+  album.textContent="";
+  status.textContent="NOT PLAYING";
+  progress.style.width="0%";
+}
+
+async function updateSong(track){
+  if(!track||!track.item){ showNothing(); return; }
+  const item=track.item;
+  const imgs=item.album.images||[];
+  /* use a mid-size image: sharper than tiny, lighter than the biggest */
+  const imageURL=imgs.length?(imgs[1]||imgs[0]).url:"";
+
+  if(currentTrackId===null){
+    currentTrackId=item.id; currentTrack=track; art.src=imageURL;
+  }else if(currentTrackId!==item.id){
+    currentTrackId=item.id; currentTrack=track;
+    title.textContent=item.name;
+    artist.textContent=item.artists.map(a=>a.name).join(", ");
+    album.textContent=item.album.name;
+    status.textContent=track.is_playing?"PLAYING":"PAUSED";
+    if(imageURL)await pixelFadeTo(imageURL);
+  }
+
+  currentTrack=track;
+  title.textContent=item.name;
+  artist.textContent=item.artists.map(a=>a.name).join(", ");
+  album.textContent=item.album.name;
+  status.textContent=track.is_playing?"PLAYING":"PAUSED";
+
+  const dur=item.duration_ms, pos=track.progress_ms||0;
+  progress.style.width=(dur?(pos/dur)*100:0)+"%";
+  lastProgress=pos;
+  lastProgressTime=Date.now();
+}
+
+async function getCurrentlyPlaying(){
+  if(!accessToken)return;
+  try{
+    const res=await fetch("https://api.spotify.com/v1/me/player/currently-playing",{
+      headers:{Authorization:"Bearer "+accessToken}
+    });
+    if(res.status===204){ showNothing(); return; }
+    if(res.status===401){
+      localStorage.removeItem("spotify_access_token");
+      accessToken=null;
+      loginButton.classList.remove("hidden");
+      status.textContent="LOGIN REQUIRED";
+      return;
+    }
+    if(!res.ok){ console.error("Spotify error:",res.status); return; }
+    await updateSong(await res.json());
+  }catch(err){
+    console.error("Spotify request failed:",err);
+    status.textContent="CONNECTION ERROR";
+  }
+}
+
+/* smooth progress bar between API checks */
+setInterval(()=>{
+  if(!currentTrack||!currentTrack.item||!currentTrack.is_playing)return;
+  const dur=currentTrack.item.duration_ms;
+  if(!dur)return;
+  const est=lastProgress+(Date.now()-lastProgressTime);
+  progress.style.width=Math.min(100,(est/dur)*100)+"%";
+},500);
+
+async function init(){
+  const loggedIn=await checkCallback();
+  if(!loggedIn){
+    loginButton.classList.remove("hidden");
+    status.textContent="NOT CONNECTED";
+    return;
+  }
+  loginButton.classList.add("hidden");
+  status.textContent="CONNECTING";
+  await getCurrentlyPlaying();
+  setInterval(getCurrentlyPlaying,5000);
+}
+init();
+</script>
+</body>
+</html>
