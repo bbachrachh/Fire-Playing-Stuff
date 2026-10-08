@@ -6,36 +6,39 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>Now Playing</title>
 <style>
-:root{--bg:#f4f4f0;--fg:#111;--line:#c8c8c4}
-body.dark{--bg:#111;--fg:#f4f4f0;--line:#444}
-*{box-sizing:border-box}
-*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+:root{--bg:#1f5a46;--shadow:#143a2d;--tint:#f6e3ea;--rec:#f8e6ec;--groove:#e8c9d4;--accent:#f26b4a;--cone:#e58aa5;--cone2:#cf6f8d;--pill:#bfe3d3;--legs:#17402f;--accent2:#f5a03a;--platter:#1b4d3b;--fg:#f6f3ec;--line:rgba(246,243,236,.3)}
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 ::selection{background:var(--fg);color:var(--bg)}
-::-moz-selection{background:var(--fg);color:var(--bg)}
 button,button:focus,button:active{outline:none;-webkit-tap-highlight-color:transparent}
 button:focus-visible{outline:1px solid var(--fg)}
 html,body{margin:0;padding:0;width:100%;height:100%;height:100dvh}
-body{background:var(--bg);color:var(--fg);font-family:Georgia,"Times New Roman",serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
-#app{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:2.5vh 5vw}
-#art-wrap{position:relative;width:min(38vh,72vw,500px);height:min(38vh,72vw,500px);flex:0 0 auto;margin-bottom:2vh;overflow:hidden;background:#111}
-#art{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(100%)}
-#pixel-transition{position:absolute;top:0;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(16,1fr);grid-template-rows:repeat(16,1fr);pointer-events:none;opacity:0;filter:grayscale(100%)}
-.pixel{opacity:0;background-repeat:no-repeat;transition-property:opacity;transition-timing-function:steps(4,end)}
-#info{display:flex;flex-direction:column;align-items:center;width:100%;max-width:700px;min-width:0}
+body{background:var(--bg);color:var(--fg);font-family:Georgia,"Times New Roman",serif;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:background 1.2s}
+#app{width:100%;height:100%;display:flex;flex-direction:column}
+#scene{flex:1.2 1 0;min-height:0;min-width:0;position:relative;overflow:hidden}
+#svg{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+.t{transition:fill 1.2s,stroke 1.2s}
+.f-bg{fill:var(--bg)}.f-shadow{fill:var(--shadow)}.f-platter{fill:var(--platter)}.f-tint{fill:var(--tint)}.f-rec{fill:var(--rec)}
+.f-cone{fill:var(--cone)}.f-cone2{fill:var(--cone2)}.f-pill{fill:var(--pill)}.f-acc{fill:var(--accent)}.f-legs{fill:var(--legs)}
+.s-groove{stroke:var(--groove);fill:none;stroke-width:1;vector-effect:non-scaling-stroke;opacity:.75}
+.s-acc{stroke:var(--accent);fill:none}
+.s-bg{stroke:var(--bg);fill:none}
+#lab{transition:opacity .35s}
+#info{flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:1.5vh 5vw;min-width:0}
 #info>*{flex-shrink:0}
 #label{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:3px;font-weight:bold;margin-bottom:1vh;text-align:center}
 #title{font-size:clamp(20px,3.4vw,32px);line-height:1.15;text-align:center;margin:0;max-width:90vw;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #artist{font-size:clamp(15px,2.2vw,20px);margin-top:6px;text-align:center;font-style:italic;max-width:90vw;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-#album{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1px;margin-top:6px;opacity:.65;text-align:center;max-width:90vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#progress-container{width:min(38vh,72vw,500px);height:2px;background:var(--line);margin-top:2vh;overflow:hidden}
+#album{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1px;margin-top:6px;opacity:.7;text-align:center;max-width:90vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#progress-container{width:min(80vw,460px);height:2px;background:var(--line);margin-top:2vh;overflow:hidden}
 #progress{width:0%;height:100%;background:var(--fg);transition:width .5s linear}
-#status{font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:2px;margin-top:1.2vh;opacity:.5;text-align:center}
+#status{font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:2px;margin-top:1.2vh;opacity:.6;text-align:center}
 .row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:1.2vh}
 .ctl{border:1px solid var(--fg);background:transparent;color:var(--fg);padding:10px 14px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:2px;min-width:72px}
 .small .ctl{font-size:10px;padding:8px 10px;min-width:0;letter-spacing:1px}
 .ctl:active,.ctl.on{background:var(--fg);color:var(--bg)}
 #login{border:1px solid var(--fg);background:transparent;color:var(--fg);padding:12px 20px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:2px;margin-top:1.5vh}
-#theme{position:fixed;top:8px;right:8px;z-index:5;width:44px;height:44px;padding:10px;border:0;background:transparent;color:var(--fg);opacity:.55}
+#grain{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:3;opacity:.16}
+#theme{position:fixed;top:8px;right:8px;z-index:5;width:44px;height:44px;padding:10px;border:0;background:transparent;color:var(--fg);opacity:.6}
 #theme svg{width:100%;height:100%;display:block}
 #msg{position:fixed;top:0;left:0;right:0;padding:8px 12px;background:var(--fg);color:var(--bg);font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:1px;text-align:center;z-index:20}
 #msg:empty{display:none}
@@ -50,22 +53,78 @@ body{background:var(--bg);color:var(--fg);font-family:Georgia,"Times New Roman",
 #fshint{position:fixed;bottom:6px;left:0;right:0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:2px;opacity:.35;pointer-events:none}
 .hidden{display:none !important}
 @media (orientation:landscape){
-  #app{flex-direction:row;gap:5vw;padding:3vh 4vw}
-  #art-wrap{width:min(84vh,40vw);height:min(84vh,40vw);margin-bottom:0}
-  #info{flex:1;align-items:flex-start}
+  #app{flex-direction:row}
+  #scene{flex:1.25 1 0}
+  #info{align-items:flex-start;padding:3vh 4vw 3vh 1vw}
   #label,#title,#artist,#album,#status{text-align:left}
-  #title{font-size:clamp(22px,4vw,40px)}
-  #artist{font-size:clamp(16px,2.4vw,24px)}
-  #progress-container{width:100%}
+  #title{font-size:clamp(22px,3.6vw,38px)}
+  #artist{font-size:clamp(16px,2.2vw,22px)}
+  #progress-container{width:100%;max-width:460px}
   .row{justify-content:flex-start}
 }
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="art-wrap">
-    <img id="art" src="" alt="Album artwork">
-    <div id="pixel-transition"></div>
+  <div id="scene">
+    <svg id="svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <defs><clipPath id="lc"><circle r="135"/></clipPath></defs>
+      <rect x="-200" y="-200" width="1400" height="1400" class="f-bg t"/>
+      <polygon points="-200,-200 780,-200 -200,380" class="f-tint t"/>
+      <polygon points="190,222 244,216 318,240" fill="#000" opacity=".13"/><polygon points="118,330 186,322 272,346" fill="#000" opacity=".13"/><polygon points="70,258 102,254 152,270" fill="#000" opacity=".13"/>
+      <polygon points="215,150 190,222 244,216" class="f-cone t"/>
+      <polygon points="215,150 221,220 244,216" class="f-cone2 t"/>
+      <polygon points="150,250 118,330 186,322" class="f-cone t"/>
+      <polygon points="150,250 158,328 186,322" class="f-cone2 t"/>
+      <polygon points="85,215 70,258 102,254" class="f-cone t"/>
+      <g transform="translate(40 -50) rotate(-12 800 250)">
+        <rect x="735" y="222" width="136" height="56" rx="28" class="f-shadow t"/>
+        <rect x="735" y="214" width="136" height="56" rx="28" class="f-pill t"/>
+        <circle cx="772" cy="242" r="16" class="f-acc t"/><circle cx="834" cy="242" r="16" class="f-acc t"/>
+      </g>
+      <g transform="translate(514 560) rotate(-14) scale(1 .5625)"><circle r="506" class="f-shadow t"/></g>
+      <g transform="translate(500 540) rotate(-14) scale(1 .5625)"><circle r="506" class="f-platter t"/></g>
+      <circle cx="880" cy="140" r="3" fill="#fff" opacity=".7"/><circle cx="940" cy="430" r="3" fill="#fff" opacity=".7"/><circle cx="60" cy="700" r="3" fill="#fff" opacity=".7"/><circle cx="170" cy="880" r="3" fill="#fff" opacity=".6"/><circle cx="760" cy="920" r="3" fill="#fff" opacity=".6"/><circle cx="930" cy="760" r="2.5" fill="#fff" opacity=".6"/><circle cx="640" cy="90" r="2.5" fill="#fff" opacity=".6"/>
+      <g transform="translate(500 540) rotate(-14) scale(1 .5625)">
+        <circle r="480" class="f-rec t"/>
+        <g id="rings"></g>
+        <g>
+          <circle r="135" class="f-shadow t"/>
+          <image id="lab" x="-135" y="-135" width="270" height="270" preserveAspectRatio="xMidYMid slice" clip-path="url(#lc)" opacity="0"/>
+          <circle r="135" class="s-bg t" stroke-width="9"/>
+          <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="7s" repeatCount="indefinite"/>
+        </g>
+      </g>
+      <g transform="translate(500 540) rotate(-14)">
+        <path d="M-370,0 A370,208 0 1 1 370,0 A370,208 0 1 1 -370,0 Z" class="s-acc t" stroke-width="2" opacity=".3"/>
+        <path id="trB" class="t" style="stroke:var(--accent2);fill:none" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="d" dur="1.4s" repeatCount="indefinite"/></path>
+        <path id="trA" class="s-acc t" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="d" dur="1.4s" repeatCount="indefinite"/></path>
+        <g transform="translate(237.8 159.3)">
+          <ellipse cx="12" cy="7" rx="22" ry="9" fill="#000" opacity=".2"/>
+          <g transform="scale(1.7) rotate(14)">
+            <g>
+              <animateTransform attributeName="transform" type="translate" values="4 0;0 0;-4 0;0 0;4 0" dur="1.4s" repeatCount="indefinite"/>
+              <g><rect x="-2.2" y="-14" width="4.4" height="14" rx="2" class="f-legs t"/><rect x="-5" y="-1.4" width="10" height="2" rx="1" fill="#222"/>
+                <animateTransform attributeName="transform" type="rotate" values="0 0 -14;-28 0 -14;0 0 -14;4 0 -14;0 0 -14" dur="1.4s" repeatCount="indefinite"/></g>
+            </g>
+            <g>
+              <animateTransform attributeName="transform" type="translate" values="-4 0;0 0;4 0;0 0;-4 0" dur="1.4s" repeatCount="indefinite"/>
+              <g><rect x="-2.2" y="-14" width="4.4" height="14" rx="2" class="f-legs t"/><rect x="-5" y="-1.4" width="10" height="2" rx="1" fill="#222"/>
+                <animateTransform attributeName="transform" type="rotate" values="0 0 -14;4 0 -14;0 0 -14;-28 0 -14;0 0 -14" dur="1.4s" repeatCount="indefinite"/></g>
+            </g>
+            <g>
+              <animateTransform attributeName="transform" type="rotate" values="-7 0 -14;0 0 -14;7 0 -14;0 0 -14;-7 0 -14" dur="1.4s" repeatCount="indefinite"/>
+              <g><line x1="-5" y1="-27" x2="-18" y2="-21" class="s-acc t" stroke-width="3.2" stroke-linecap="round"/>
+                <animateTransform attributeName="transform" type="rotate" values="-18 -5 -27;0 -5 -27;18 -5 -27;0 -5 -27;-18 -5 -27" dur="1.4s" repeatCount="indefinite"/></g>
+              <g><line x1="5" y1="-27" x2="18" y2="-21" class="s-acc t" stroke-width="3.2" stroke-linecap="round"/>
+                <animateTransform attributeName="transform" type="rotate" values="18 5 -27;0 5 -27;-18 5 -27;0 5 -27;18 5 -27" dur="1.4s" repeatCount="indefinite"/></g>
+              <rect x="-6" y="-30" width="12" height="18" rx="4" class="f-acc t"/>
+              <circle cx="0" cy="-36" r="6" fill="#2a1d1d"/>
+            </g>
+          </g>
+        </g>
+      </g>
+    </svg>
   </div>
   <div id="info">
     <div id="label">NOW PLAYING</div>
@@ -96,6 +155,7 @@ body{background:var(--bg);color:var(--fg);font-family:Georgia,"Times New Roman",
     <div id="qclose">TAP ANYWHERE TO CLOSE</div>
   </div>
 </div>
+<div id="grain"></div>
 <button id="theme" aria-label="Toggle dark mode"></button>
 <div id="msg"></div>
 <div id="fshint">TAP ANYWHERE FOR FULLSCREEN</div>
@@ -113,15 +173,111 @@ const LS={
   set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},
   del:k=>{try{localStorage.removeItem(k)}catch(e){}}
 };
-const art=$("art"), pixelTransition=$("pixel-transition"), title=$("title"), artist=$("artist"),
-      album=$("album"), progress=$("progress"), status=$("status"), loginButton=$("login"),
-      fshint=$("fshint"), controls=$("controls"), toggleBtn=$("toggle"), likeBtn=$("like"),
-      shufBtn=$("shuf"), repBtn=$("rep"), msgEl=$("msg");
+const title=$("title"), artist=$("artist"), album=$("album"), progress=$("progress"), status=$("status"),
+      loginButton=$("login"), fshint=$("fshint"), controls=$("controls"), toggleBtn=$("toggle"),
+      likeBtn=$("like"), shufBtn=$("shuf"), repBtn=$("rep"), msgEl=$("msg"), lab=$("lab"), svg=$("svg");
 
 let accessToken=null, currentTrackId=null, currentTrack=null, lastProgress=0, lastProgressTime=0;
 let liked=false, shuffleOn=false, repeatMode="off", msgTimer=null;
+let base={h:155,s:.5};
 
 function flash(t){ msgEl.textContent=t; clearTimeout(msgTimer); msgTimer=setTimeout(()=>{msgEl.textContent="";},8000); }
+
+/* ---------- scene: grooves, palette, label ---------- */
+(function(){
+  const g=$("rings"), NS="http://www.w3.org/2000/svg";
+  for(let r=150;r<=474;r+=8){
+    const c=document.createElementNS(NS,"circle");
+    c.setAttribute("r",r); c.setAttribute("class","s-groove t");
+    g.appendChild(c);
+  }
+})();
+(function(){
+  try{
+    const c=document.createElement("canvas"); c.width=c.height=128;
+    const x=c.getContext("2d"), im=x.createImageData(128,128), d=im.data;
+    for(let i=0;i<d.length;i+=4){
+      const v=Math.random()>.5?255:0;
+      d[i]=d[i+1]=d[i+2]=v; d[i+3]=Math.random()*110;
+    }
+    x.putImageData(im,0,0);
+    $("grain").style.backgroundImage="url("+c.toDataURL("image/png")+")";
+  }catch(e){}
+})();
+function buildTrails(){
+  const a=370,b=208,p0=-210*Math.PI/180,p1=50*Math.PI/180,n=120,K=8,cyc=6,amp=8;
+  function path(sign,shift){
+    let d="";
+    for(let i=0;i<=n;i++){
+      const t=i/n,p=p0+(p1-p0)*t;
+      const x=a*Math.cos(p),y=b*Math.sin(p);
+      const nx=b*Math.cos(p),ny=a*Math.sin(p),l=Math.sqrt(nx*nx+ny*ny);
+      const off=sign*amp*Math.pow(t,.7)*Math.sin(cyc*2*Math.PI*(1-t)+Math.PI/2+shift);
+      d+=(i?"L":"M")+(x+nx/l*off).toFixed(1)+","+(y+ny/l*off).toFixed(1);
+    }
+    return d;
+  }
+  [["trA",1],["trB",-1]].forEach(function(o){
+    const el=$(o[0]),vals=[];
+    for(let k=0;k<K;k++)vals.push(path(o[1],2*Math.PI*k/K));
+    vals.push(vals[0]);
+    el.setAttribute("d",vals[0]);
+    el.querySelector("animate").setAttribute("values",vals.join(";"));
+  });
+}
+buildTrails();
+function hsl(h,s,l){return "hsl("+Math.round(((h%360)+360)%360)+","+Math.round(s*100)+"%,"+Math.round(l*100)+"%)";}
+function applyPalette(){
+  const dark=document.body.classList.contains("dark");
+  const neutral=base.s<0.12;
+  const s=neutral?0.06:Math.min(0.75,Math.max(0.4,base.s));
+  const h=base.h, c=h+175;
+  let d=Math.abs(h-10)%360; d=Math.min(d,360-d);
+  const blue=(!neutral&&d<45);
+  const accent=blue?hsl(210,.75,dark?.62:.42):hsl(10,.9,dark?.62:.6);
+  const accent2=blue?hsl(195,.8,dark?.65:.5):hsl(32,.95,dark?.68:.6);
+  const v={
+    "--bg":hsl(h,s,dark?.15:.34), "--shadow":hsl(h,s,dark?.09:.21),
+    "--tint":hsl(c,neutral?.05:.5,dark?.22:.91), "--rec":hsl(c,neutral?.04:.45,dark?.3:.93),
+    "--groove":hsl(c,.3,dark?.2:.8), "--cone":hsl(c,.5,dark?.4:.7), "--cone2":hsl(c,.5,dark?.3:.6),
+    "--pill":hsl(h,.2,dark?.28:.85), "--legs":hsl(h,s,dark?.1:.22), "--accent":accent, "--accent2":accent2, "--platter":hsl(h,s,dark?.12:.27)
+  };
+  for(const k in v)document.documentElement.style.setProperty(k,v[k]);
+}
+function extractPalette(url){
+  const im=new Image(); im.crossOrigin="anonymous";
+  im.onload=()=>{
+    try{
+      const cv=document.createElement("canvas"); cv.width=cv.height=32;
+      const x=cv.getContext("2d"); x.drawImage(im,0,0,32,32);
+      const d=x.getImageData(0,0,32,32).data;
+      const bins=[]; for(let i=0;i<24;i++)bins.push({w:0,s:0,sx:0,sy:0});
+      for(let i=0;i<d.length;i+=4){
+        const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255;
+        const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,df=mx-mn;
+        if(df<0.08)continue;
+        const sat=df/(1-Math.abs(2*l-1)+1e-6);
+        let h; if(mx===r)h=((g-b)/df)%6; else if(mx===g)h=(b-r)/df+2; else h=(r-g)/df+4;
+        h*=60; if(h<0)h+=360;
+        const w=sat*(1-Math.abs(2*l-1));
+        const bn=bins[Math.floor(h/15)%24];
+        bn.w+=w; bn.s+=sat*w; bn.sx+=Math.cos(h*Math.PI/180)*w; bn.sy+=Math.sin(h*Math.PI/180)*w;
+      }
+      let best=bins[0]; bins.forEach(bn=>{if(bn.w>best.w)best=bn;});
+      if(best.w<1.5)base={h:base.h,s:.05};
+      else{let h=Math.atan2(best.sy,best.sx)*180/Math.PI; if(h<0)h+=360; base={h:h,s:best.s/best.w};}
+      applyPalette();
+    }catch(e){console.error("palette",e);}
+  };
+  im.src=url;
+}
+function setLabel(url,instant){
+  const put=()=>{lab.setAttribute("href",url);lab.setAttributeNS("http://www.w3.org/1999/xlink","href",url);lab.setAttribute("opacity","1");lab.style.opacity="";};
+  if(instant||!lab.getAttribute("href")){put();return;}
+  lab.style.opacity="0";
+  setTimeout(put,350);
+}
+function sceneRun(on){ try{ if(on)svg.unpauseAnimations(); else svg.pauseAnimations(); }catch(e){} }
 
 /* ---------- fullscreen (tap anywhere) ---------- */
 function goFullscreen(){
@@ -142,7 +298,7 @@ document.addEventListener("click",e=>{ if(e.target!==loginButton&&!inFullscreen(
 /* ---------- theme ---------- */
 const MOON='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
 const SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>';
-function applyTheme(d){ document.body.classList.toggle("dark",d); $("theme").innerHTML=d?SUN:MOON; }
+function applyTheme(d){ document.body.classList.toggle("dark",d); $("theme").innerHTML=d?SUN:MOON; applyPalette(); }
 $("theme").addEventListener("click",()=>{
   const d=!document.body.classList.contains("dark");
   applyTheme(d); LS.set("theme",d?"dark":"light");
@@ -242,38 +398,10 @@ async function cmd(method,path,body){
   }catch(e){flash("CONNECTION ERROR: "+e);return false;}
 }
 
-/* ---------- pixel transition ---------- */
-function createPixelGrid(url){
-  pixelTransition.innerHTML="";
-  const cols=16,rows=16,pixels=[];
-  for(let y=0;y<rows;y++){for(let x=0;x<cols;x++){
-    const p=document.createElement("div");
-    p.className="pixel";
-    p.style.backgroundImage='url("'+url+'")';
-    p.style.backgroundSize=(cols*100)+"% "+(rows*100)+"%";
-    p.style.backgroundPosition=((x/(cols-1))*100)+"% "+((y/(rows-1))*100)+"%";
-    pixelTransition.appendChild(p); pixels.push(p);
-  }}
-  return pixels;
-}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-async function pixelFadeTo(url){
-  await new Promise(r=>{const im=new Image();im.onload=r;im.onerror=r;im.src=url;});
-  const pixels=createPixelGrid(url);
-  pixelTransition.style.opacity="1";
-  const order=shuffle(pixels.map((_,i)=>i));
-  pixels.forEach(p=>{p.style.opacity="0";p.style.transitionDuration="420ms";});
-  order.forEach((idx,i)=>{setTimeout(()=>{pixels[idx].style.opacity="1";},(i/order.length)*650+Math.random()*180);});
-  await new Promise(r=>setTimeout(r,1050));
-  art.src=url;
-  pixelTransition.style.opacity="0";
-  setTimeout(()=>{pixelTransition.innerHTML="";},100);
-}
-
 /* ---------- now playing ---------- */
 const artistsOf=t=>(t.artists||[]).map(a=>a.name).join(", ");
 function statusText(t){return (t.is_playing?"PLAYING":"PAUSED")+(t.device&&t.device.name?" \u00b7 "+t.device.name.toUpperCase():"");}
-function syncToggle(){toggleBtn.textContent=(currentTrack&&currentTrack.is_playing)?"PAUSE":"PLAY";}
+function syncToggle(){const p=!!(currentTrack&&currentTrack.is_playing);toggleBtn.textContent=p?"PAUSE":"PLAY";sceneRun(p);}
 function setLiked(v){liked=v;likeBtn.textContent=v?"LIKED":"LIKE";likeBtn.classList.toggle("on",v);}
 function setShufRep(t){
   shuffleOn=!!t.shuffle_state; repeatMode=t.repeat_state||"off";
@@ -305,9 +433,10 @@ async function updateSong(t){
   const dur=it.duration_ms, pos=t.progress_ms||0;
   progress.style.width=(dur?(pos/dur)*100:0)+"%";
   lastProgress=pos; lastProgressTime=Date.now();
-  if(changed){setLiked(false);checkLiked(it.id);}
-  if(first)art.src=url;
-  else if(changed&&url)await pixelFadeTo(url);
+  if(changed){
+    setLiked(false); checkLiked(it.id);
+    if(url){ setLabel(url,first); extractPalette(url); }
+  }
 }
 async function getPlayback(){
   if(!accessToken)return;
@@ -355,9 +484,9 @@ likeBtn.addEventListener("click",async()=>{
   }catch(e){flash("CONNECTION ERROR: "+e);}
 });
 
-/* ---------- panel: queue / recent / devices ---------- */
+/* ---------- panel: queue / devices ---------- */
 const queueEl=$("queue"), qlist=$("qlist");
-let panelTimer=null, panelKind=null;
+let panelTimer=null;
 function note(t){
   qlist.innerHTML="";
   const m=document.createElement("div"); m.className="qa"; m.style.textAlign="center"; m.textContent=t;
@@ -369,15 +498,14 @@ async function loadPanel(kind){
   try{
     const res=await api("GET",cfg[1]);
     if(!res.ok){
-      if(res.status===403)note("Permission missing - close this and tap Connect to Spotify.");
+      if(res.status===403){note("Permission missing - close this and tap Connect to Spotify.");loginButton.classList.remove("hidden");}
       else note(res.status===404?"No active device.":"Couldn't load ("+res.status+").");
-      if(res.status===403)loginButton.classList.remove("hidden");
       return;
     }
     const data=await res.json(); let rows=[];
     if(kind==="queue")rows=(data.queue||[]).slice(0,10).map(t=>({a:t.name,b:artistsOf(t)}));
     else rows=(data.devices||[]).map(d=>({a:d.name,b:d.type+(d.is_active?" \u00b7 ACTIVE":"")+(d.is_restricted?" \u00b7 RESTRICTED":""),id:d.id,act:d.is_active}));
-    if(!rows.length){note(kind==="queue"?"Nothing queued.":kind==="devices"?"No devices found - open Spotify on one.":"Nothing yet.");return;}
+    if(!rows.length){note(kind==="queue"?"Nothing queued.":"No devices found - open Spotify on one.");return;}
     qlist.innerHTML="";
     rows.forEach((r,i)=>{
       const row=document.createElement("div"); row.className="qi"+(r.act?" act":"");
@@ -394,7 +522,7 @@ async function loadPanel(kind){
   }catch(e){console.error(e);note("Connection error.");}
 }
 function openPanel(kind){
-  panelKind=kind; queueEl.classList.remove("hidden"); note("Loading...");
+  queueEl.classList.remove("hidden"); note("Loading...");
   loadPanel(kind); clearInterval(panelTimer);
   if(kind==="queue")panelTimer=setInterval(()=>loadPanel("queue"),5000);
 }
