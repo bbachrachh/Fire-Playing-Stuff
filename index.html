@@ -13,8 +13,8 @@ button,button:focus,button:active{outline:none;-webkit-tap-highlight-color:trans
 button:focus-visible{outline:1px solid var(--fg)}
 html,body{margin:0;padding:0;width:100%;height:100%;height:100dvh}
 body{background:var(--bg);color:var(--fg);font-family:Georgia,"Times New Roman",serif;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:background 1.2s}
-#app{width:100%;height:100%;display:flex;flex-direction:column}
-#scene{flex:1.2 1 0;min-height:0;min-width:0;position:relative;overflow:hidden}
+#app{position:fixed;top:0;left:0;right:0;bottom:0}
+#scene{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden}
 #svg{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
 .t{transition:fill 1.2s,stroke 1.2s}
 .f-bg{fill:var(--bg)}.f-shadow{fill:var(--shadow)}.f-platter{fill:var(--platter)}.f-tint{fill:var(--tint)}.f-rec{fill:var(--rec)}
@@ -23,101 +23,142 @@ body{background:var(--bg);color:var(--fg);font-family:Georgia,"Times New Roman",
 .s-acc{stroke:var(--accent);fill:none}
 .s-bg{stroke:var(--bg);fill:none}
 #lab{transition:opacity .35s}
-#info{flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:1.5vh 5vw;min-width:0}
-#info>*{flex-shrink:0}
-#label{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:3px;font-weight:bold;margin-bottom:1vh;text-align:center}
-#title{font-size:clamp(20px,3.4vw,32px);line-height:1.15;text-align:center;margin:0;max-width:90vw;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-#artist{font-size:clamp(15px,2.2vw,20px);margin-top:6px;text-align:center;font-style:italic;max-width:90vw;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-#album{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1px;margin-top:6px;opacity:.7;text-align:center;max-width:90vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#progress-container{width:min(80vw,460px);height:2px;background:var(--line);margin-top:2vh;overflow:hidden}
+
+#info{position:absolute;top:12px;left:16px;z-index:4;display:flex;flex-direction:column;align-items:flex-start;padding:10px 14px;max-width:60vw;pointer-events:none}
+#info::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:var(--bg);opacity:.78;z-index:-1;border-radius:6px}
+#label{font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:2.5px;font-weight:bold;margin-bottom:2px}
+#title{font-size:clamp(16px,4vw,24px);line-height:1.15;margin:0;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#artist{font-size:clamp(12px,3vw,16px);margin-top:2px;font-style:italic;max-width:100%;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+#album{display:none;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:1px;margin-top:2px;opacity:.7;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#status{font-family:Arial,Helvetica,sans-serif;font-size:8px;letter-spacing:2px;margin-top:4px;opacity:.7}
+
+#bar{position:fixed;left:50%;bottom:6px;width:min(80vw,500px);transform:translateX(-50%);z-index:4}
+#progress-container{width:100%;height:3px;background:var(--line);overflow:hidden}
 #progress{width:0%;height:100%;background:var(--fg);transition:width .5s linear}
-#status{font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:2px;margin-top:1.2vh;opacity:.6;text-align:center}
-.row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:1.2vh}
-.ctl{border:1px solid var(--fg);background:transparent;color:var(--fg);padding:10px 14px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:2px;min-width:72px}
-.small .ctl{font-size:10px;padding:8px 10px;min-width:0;letter-spacing:1px}
+
+#controls{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:5}
+.ctl{position:absolute;pointer-events:auto;white-space:nowrap;border:1px solid var(--fg);background:var(--bg);color:var(--fg);padding:8px 11px;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:1.5px;border-radius:18px;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:background .2s,color .2s,transform .1s}
 .ctl:active,.ctl.on{background:var(--fg);color:var(--bg)}
-#login{border:1px solid var(--fg);background:transparent;color:var(--fg);padding:12px 20px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:2px;margin-top:1.5vh}
+
+#login{position:fixed;left:50%;bottom:50px;transform:translateX(-50%);z-index:6;border:1px solid var(--fg);background:var(--bg);color:var(--fg);padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:2px;border-radius:20px}
 #grain{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:3;opacity:.16}
-#theme{position:fixed;top:8px;right:8px;z-index:5;width:44px;height:44px;padding:10px;border:0;background:transparent;color:var(--fg);opacity:.6}
+#theme{position:fixed;top:8px;right:8px;z-index:6;width:40px;height:40px;padding:8px;border:0;background:transparent;color:var(--fg);opacity:.8}
 #theme svg{width:100%;height:100%;display:block}
-#msg{position:fixed;top:0;left:0;right:0;padding:8px 12px;background:var(--fg);color:var(--bg);font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:1px;text-align:center;z-index:20}
+#msg{position:fixed;top:0;left:0;right:0;padding:8px 12px;background:var(--fg);color:var(--bg);font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1px;text-align:center;z-index:20}
 #msg:empty{display:none}
+
 #queue{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);padding:5vh 8vw;overflow:auto;z-index:10}
 #queue h2{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:3px;text-align:center;margin:0 0 3vh}
 .qi{display:flex;gap:14px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line);max-width:700px;margin:0 auto}
 .qn{font-family:Arial,Helvetica,sans-serif;font-size:11px;opacity:.5;min-width:20px}
-.qt{font-size:clamp(17px,2.6vw,22px);line-height:1.2}
+.qt{font-size:clamp(16px,2.5vw,20px);line-height:1.2}
 .qi.act .qt{font-weight:bold}
-.qa{font-style:italic;font-size:14px;opacity:.7}
+.qa{font-style:italic;font-size:13px;opacity:.7}
 #qclose{font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:2px;text-align:center;opacity:.4;margin-top:3vh}
-#fshint{position:fixed;bottom:6px;left:0;right:0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:2px;opacity:.35;pointer-events:none}
+#fshint{position:fixed;bottom:2px;left:0;right:0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:8px;letter-spacing:2px;opacity:.35;pointer-events:none;z-index:4}
 .hidden{display:none !important}
+
 @media (orientation:landscape){
-  #app{flex-direction:row}
-  #scene{flex:1.25 1 0}
-  #info{align-items:flex-start;padding:3vh 4vw 3vh 1vw}
-  #label,#title,#artist,#album,#status{text-align:left}
-  #title{font-size:clamp(22px,3.6vw,38px)}
-  #artist{font-size:clamp(16px,2.2vw,22px)}
-  #progress-container{width:100%;max-width:460px}
-  .row{justify-content:flex-start}
+  #info{top:16px;left:20px;max-width:35vw}
+  #title{font-size:clamp(18px,2.8vw,28px)}
+  #artist{font-size:clamp(13px,2vw,18px)}
+  #album{display:block}
 }
 </style>
 </head>
 <body>
 <div id="app">
   <div id="scene">
-    <svg id="svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Adjusted viewBox from 40 60 920 920 to tight center framing (100 120 800 800) to maximize record size -->
+    <svg id="svg" viewBox="100 120 800 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <defs><clipPath id="lc"><circle r="135"/></clipPath></defs>
+      
+      <!-- Background & Diagonal Tint Split -->
       <rect x="-200" y="-200" width="1400" height="1400" class="f-bg t"/>
-      <polygon points="-200,-200 780,-200 -200,380" class="f-tint t"/>
-      <polygon points="190,222 244,216 318,240" fill="#000" opacity=".13"/><polygon points="118,330 186,322 272,346" fill="#000" opacity=".13"/><polygon points="70,258 102,254 152,270" fill="#000" opacity=".13"/>
+      <polygon points="-200,-200 850,-200 -200,420" class="f-tint t"/>
+      
+      <!-- Background Decorative Cones & Pill (Scaled slightly for composition) -->
+      <polygon points="190,222 244,216 318,240" fill="#000" opacity=".13"/>
+      <polygon points="118,330 186,322 272,346" fill="#000" opacity=".13"/>
+      <polygon points="70,258 102,254 152,270" fill="#000" opacity=".13"/>
       <polygon points="215,150 190,222 244,216" class="f-cone t"/>
       <polygon points="215,150 221,220 244,216" class="f-cone2 t"/>
       <polygon points="150,250 118,330 186,322" class="f-cone t"/>
       <polygon points="150,250 158,328 186,322" class="f-cone2 t"/>
       <polygon points="85,215 70,258 102,254" class="f-cone t"/>
-      <g transform="translate(40 -50) rotate(-12 800 250)">
+      
+      <g transform="translate(60 -40) rotate(-12 800 250)">
         <rect x="735" y="222" width="136" height="56" rx="28" class="f-shadow t"/>
         <rect x="735" y="214" width="136" height="56" rx="28" class="f-pill t"/>
-        <circle cx="772" cy="242" r="16" class="f-acc t"/><circle cx="834" cy="242" r="16" class="f-acc t"/>
+        <circle cx="772" cy="242" r="16" class="f-acc t"/>
+        <circle cx="834" cy="242" r="16" class="f-acc t"/>
       </g>
-      <g transform="translate(514 560) rotate(-14) scale(1 .5625)"><circle r="506" class="f-shadow t"/></g>
-      <g transform="translate(500 540) rotate(-14) scale(1 .5625)"><circle r="506" class="f-platter t"/></g>
-      <circle cx="880" cy="140" r="3" fill="#fff" opacity=".7"/><circle cx="940" cy="430" r="3" fill="#fff" opacity=".7"/><circle cx="60" cy="700" r="3" fill="#fff" opacity=".7"/><circle cx="170" cy="880" r="3" fill="#fff" opacity=".6"/><circle cx="760" cy="920" r="3" fill="#fff" opacity=".6"/><circle cx="930" cy="760" r="2.5" fill="#fff" opacity=".6"/><circle cx="640" cy="90" r="2.5" fill="#fff" opacity=".6"/>
-      <g transform="translate(500 540) rotate(-14) scale(1 .5625)">
-        <circle r="480" class="f-rec t"/>
+
+      <!-- Platter Shadow & Base -->
+      <g transform="translate(500 520) rotate(-14) scale(1 .5625)"><circle r="520" class="f-shadow t"/></g>
+      <g transform="translate(500 500) rotate(-14) scale(1 .5625)"><circle r="520" class="f-platter t"/></g>
+
+      <!-- Ambient Specs -->
+      <circle cx="880" cy="140" r="3" fill="#fff" opacity=".7"/>
+      <circle cx="940" cy="430" r="3" fill="#fff" opacity=".7"/>
+      <circle cx="60" cy="700" r="3" fill="#fff" opacity=".7"/>
+      <circle cx="170" cy="880" r="3" fill="#fff" opacity=".6"/>
+      <circle cx="760" cy="920" r="3" fill="#fff" opacity=".6"/>
+
+      <!-- Vinyl Disc (Main Oversized Display) -->
+      <g transform="translate(500 500) rotate(-14) scale(1 .5625)">
+        <circle r="495" class="f-rec t"/>
         <g id="rings"></g>
+        
+        <!-- Rotating Center Label -->
         <g>
           <circle r="135" class="f-shadow t"/>
           <image id="lab" x="-135" y="-135" width="270" height="270" preserveAspectRatio="xMidYMid slice" clip-path="url(#lc)" opacity="0"/>
           <circle r="135" class="s-bg t" stroke-width="9"/>
+          <!-- Rotation matching the 7s smooth vinyl spin in reference video -->
           <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="7s" repeatCount="indefinite"/>
         </g>
       </g>
-      <g transform="translate(500 540) rotate(-14)">
-        <path d="M-370,0 A370,208 0 1 1 370,0 A370,208 0 1 1 -370,0 Z" class="s-acc t" stroke-width="2" opacity=".3"/>
-        <path id="trB" class="t" style="stroke:var(--accent2);fill:none" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="d" dur="1.4s" repeatCount="indefinite"/></path>
-        <path id="trA" class="s-acc t" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="d" dur="1.4s" repeatCount="indefinite"/></path>
+
+      <!-- Skater & Motion Trails (Overlayed along perspective axis) -->
+      <g transform="translate(500 500) rotate(-14)">
+        <path d="M-370,0 A370,208 0 1 1 370,0 A370,208 0 1 1 -370,0 Z" class="s-acc t" stroke-width="2" opacity=".25"/>
+        <path id="trB" class="t" style="stroke:var(--accent2);fill:none" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+          <animate attributeName="d" dur="1.4s" repeatCount="indefinite"/>
+        </path>
+        <path id="trA" class="s-acc t" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+          <animate attributeName="d" dur="1.4s" repeatCount="indefinite"/>
+        </path>
+        
         <g transform="translate(237.8 159.3)">
           <ellipse cx="12" cy="7" rx="22" ry="9" fill="#000" opacity=".2"/>
           <g transform="scale(1.7) rotate(14)">
             <g>
               <animateTransform attributeName="transform" type="translate" values="4 0;0 0;-4 0;0 0;4 0" dur="1.4s" repeatCount="indefinite"/>
-              <g><rect x="-2.2" y="-14" width="4.4" height="14" rx="2" class="f-legs t"/><rect x="-5" y="-1.4" width="10" height="2" rx="1" fill="#222"/>
-                <animateTransform attributeName="transform" type="rotate" values="0 0 -14;-28 0 -14;0 0 -14;4 0 -14;0 0 -14" dur="1.4s" repeatCount="indefinite"/></g>
+              <g>
+                <rect x="-2.2" y="-14" width="4.4" height="14" rx="2" class="f-legs t"/>
+                <rect x="-5" y="-1.4" width="10" height="2" rx="1" fill="#222"/>
+                <animateTransform attributeName="transform" type="rotate" values="0 0 -14;-28 0 -14;0 0 -14;4 0 -14;0 0 -14" dur="1.4s" repeatCount="indefinite"/>
+              </g>
             </g>
             <g>
               <animateTransform attributeName="transform" type="translate" values="-4 0;0 0;4 0;0 0;-4 0" dur="1.4s" repeatCount="indefinite"/>
-              <g><rect x="-2.2" y="-14" width="4.4" height="14" rx="2" class="f-legs t"/><rect x="-5" y="-1.4" width="10" height="2" rx="1" fill="#222"/>
-                <animateTransform attributeName="transform" type="rotate" values="0 0 -14;4 0 -14;0 0 -14;-28 0 -14;0 0 -14" dur="1.4s" repeatCount="indefinite"/></g>
+              <g>
+                <rect x="-2.2" y="-14" width="4.4" height="14" rx="2" class="f-legs t"/>
+                <rect x="-5" y="-1.4" width="10" height="2" rx="1" fill="#222"/>
+                <animateTransform attributeName="transform" type="rotate" values="0 0 -14;4 0 -14;0 0 -14;-28 0 -14;0 0 -14" dur="1.4s" repeatCount="indefinite"/>
+              </g>
             </g>
             <g>
               <animateTransform attributeName="transform" type="rotate" values="-7 0 -14;0 0 -14;7 0 -14;0 0 -14;-7 0 -14" dur="1.4s" repeatCount="indefinite"/>
-              <g><line x1="-5" y1="-27" x2="-18" y2="-21" class="s-acc t" stroke-width="3.2" stroke-linecap="round"/>
-                <animateTransform attributeName="transform" type="rotate" values="-18 -5 -27;0 -5 -27;18 -5 -27;0 -5 -27;-18 -5 -27" dur="1.4s" repeatCount="indefinite"/></g>
-              <g><line x1="5" y1="-27" x2="18" y2="-21" class="s-acc t" stroke-width="3.2" stroke-linecap="round"/>
-                <animateTransform attributeName="transform" type="rotate" values="18 5 -27;0 5 -27;-18 5 -27;0 5 -27;18 5 -27" dur="1.4s" repeatCount="indefinite"/></g>
+              <g>
+                <line x1="-5" y1="-27" x2="-18" y2="-21" class="s-acc t" stroke-width="3.2" stroke-linecap="round"/>
+                <animateTransform attributeName="transform" type="rotate" values="-18 -5 -27;0 -5 -27;18 -5 -27;0 -5 -27;-18 -5 -27" dur="1.4s" repeatCount="indefinite"/>
+              </g>
+              <g>
+                <line x1="5" y1="-27" x2="18" y2="-21" class="s-acc t" stroke-width="3.2" stroke-linecap="round"/>
+                <animateTransform attributeName="transform" type="rotate" values="18 5 -27;0 5 -27;-18 5 -27;0 5 -27;18 5 -27" dur="1.4s" repeatCount="indefinite"/>
+              </g>
               <rect x="-6" y="-30" width="12" height="18" rx="4" class="f-acc t"/>
               <circle cx="0" cy="-36" r="6" fill="#2a1d1d"/>
             </g>
@@ -126,35 +167,39 @@ body{background:var(--bg);color:var(--fg);font-family:Georgia,"Times New Roman",
       </g>
     </svg>
   </div>
+
   <div id="info">
     <div id="label">NOW PLAYING</div>
     <h1 id="title">Nothing Playing</h1>
     <div id="artist"></div>
     <div id="album"></div>
-    <div id="progress-container"><div id="progress"></div></div>
     <div id="status">WAITING</div>
-    <div id="controls" class="hidden">
-      <div class="row">
-        <button class="ctl" id="prev">PREV</button>
-        <button class="ctl" id="toggle">PAUSE</button>
-        <button class="ctl" id="next">NEXT</button>
-        <button class="ctl" id="like">LIKE</button>
-      </div>
-      <div class="row small">
-        <button class="ctl" id="shuf">SHUFFLE</button>
-        <button class="ctl" id="rep">REPEAT</button>
-        <button class="ctl" id="qbtn">QUEUE</button>
-        <button class="ctl" id="dbtn">DEVICES</button>
-      </div>
-    </div>
-    <button id="login" class="hidden">CONNECT TO SPOTIFY</button>
   </div>
+
+  <div id="bar"><div id="progress-container"><div id="progress"></div></div></div>
+
+  <!-- Curved Interactive Controls -->
+  <div id="controls" class="hidden">
+    <button class="ctl" id="shuf">SHUFFLE</button>
+    <button class="ctl" id="rep">REPEAT</button>
+    <button class="ctl" id="qbtn">QUEUE</button>
+    <button class="ctl" id="dbtn">DEVICES</button>
+
+    <button class="ctl" id="prev">PREV</button>
+    <button class="ctl" id="toggle">PAUSE</button>
+    <button class="ctl" id="next">NEXT</button>
+    <button class="ctl" id="like">LIKE</button>
+  </div>
+
+  <button id="login" class="hidden">CONNECT TO SPOTIFY</button>
+
   <div id="queue" class="hidden">
     <h2 id="qtitle">UP NEXT</h2>
     <div id="qlist"></div>
     <div id="qclose">TAP ANYWHERE TO CLOSE</div>
   </div>
 </div>
+
 <div id="grain"></div>
 <button id="theme" aria-label="Toggle dark mode"></button>
 <div id="msg"></div>
@@ -183,15 +228,16 @@ let base={h:155,s:.5};
 
 function flash(t){ msgEl.textContent=t; clearTimeout(msgTimer); msgTimer=setTimeout(()=>{msgEl.textContent="";},8000); }
 
-/* ---------- scene: grooves, palette, label ---------- */
+/* ---------- scene setup ---------- */
 (function(){
   const g=$("rings"), NS="http://www.w3.org/2000/svg";
-  for(let r=150;r<=474;r+=8){
+  for(let r=145;r<=485;r+=7.5){
     const c=document.createElementNS(NS,"circle");
     c.setAttribute("r",r); c.setAttribute("class","s-groove t");
     g.appendChild(c);
   }
 })();
+
 (function(){
   try{
     const c=document.createElement("canvas"); c.width=c.height=128;
@@ -204,6 +250,7 @@ function flash(t){ msgEl.textContent=t; clearTimeout(msgTimer); msgTimer=setTime
     $("grain").style.backgroundImage="url("+c.toDataURL("image/png")+")";
   }catch(e){}
 })();
+
 function buildTrails(){
   const a=370,b=208,p0=-210*Math.PI/180,p1=50*Math.PI/180,n=120,K=8,cyc=6,amp=8;
   function path(sign,shift){
@@ -226,6 +273,7 @@ function buildTrails(){
   });
 }
 buildTrails();
+
 function hsl(h,s,l){return "hsl("+Math.round(((h%360)+360)%360)+","+Math.round(s*100)+"%,"+Math.round(l*100)+"%)";}
 function applyPalette(){
   const dark=document.body.classList.contains("dark");
@@ -244,6 +292,7 @@ function applyPalette(){
   };
   for(const k in v)document.documentElement.style.setProperty(k,v[k]);
 }
+
 function extractPalette(url){
   const im=new Image(); im.crossOrigin="anonymous";
   im.onload=()=>{
@@ -271,15 +320,17 @@ function extractPalette(url){
   };
   im.src=url;
 }
+
 function setLabel(url,instant){
   const put=()=>{lab.setAttribute("href",url);lab.setAttributeNS("http://www.w3.org/1999/xlink","href",url);lab.setAttribute("opacity","1");lab.style.opacity="";};
   if(instant||!lab.getAttribute("href")){put();return;}
   lab.style.opacity="0";
   setTimeout(put,350);
 }
+
 function sceneRun(on){ try{ if(on)svg.unpauseAnimations(); else svg.pauseAnimations(); }catch(e){} }
 
-/* ---------- fullscreen (tap anywhere) ---------- */
+/* ---------- fullscreen ---------- */
 function goFullscreen(){
   const el=document.documentElement;
   const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen;
@@ -305,7 +356,7 @@ $("theme").addEventListener("click",()=>{
 });
 applyTheme(LS.get("theme")==="dark");
 
-/* ---------- login + tokens (with refresh) ---------- */
+/* ---------- spotify Auth & API ---------- */
 function randomString(n){
   const c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const v=crypto.getRandomValues(new Uint8Array(n)); let r="";
@@ -330,7 +381,7 @@ function saveTokens(d){
   LS.set("spotify_expires_at",String(Date.now()+(d.expires_in||3600)*1000-60000));
   if(d.refresh_token)LS.set("spotify_refresh_token",d.refresh_token);
 }
-/* true = refreshed, false = refused (log in again), null = network trouble */
+
 async function refreshToken(){
   const rt=LS.get("spotify_refresh_token");
   if(!rt)return false;
@@ -342,6 +393,7 @@ async function refreshToken(){
     return true;
   }catch(e){return null;}
 }
+
 function logout(){
   accessToken=null;
   ["spotify_access_token","spotify_refresh_token","spotify_expires_at"].forEach(LS.del);
@@ -349,12 +401,14 @@ function logout(){
   loginButton.classList.remove("hidden");
   status.textContent="LOGIN REQUIRED";
 }
+
 async function exchangeCode(code){
   const body=new URLSearchParams({client_id:CLIENT_ID,grant_type:"authorization_code",code:code,redirect_uri:REDIRECT_URI,code_verifier:LS.get("spotify_verifier")});
   const res=await fetch(TOKEN_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body});
   if(!res.ok){console.error(await res.text());throw new Error("Token exchange failed");}
   saveTokens(await res.json());
 }
+
 async function checkCallback(){
   const code=new URLSearchParams(window.location.search).get("code");
   if(code){
@@ -371,7 +425,6 @@ async function checkCallback(){
   return !!accessToken;
 }
 
-/* every Spotify call goes through here: refreshes the token when needed */
 async function api(method,path,body){
   if(accessToken&&LS.get("spotify_refresh_token")&&Date.now()>Number(LS.get("spotify_expires_at")||0))await refreshToken();
   const go=()=>fetch(API+path,{method:method,
@@ -381,6 +434,7 @@ async function api(method,path,body){
   if(res.status===401&&LS.get("spotify_refresh_token")){ if(await refreshToken())res=await go(); }
   return res;
 }
+
 async function failMsg(res){
   let d=""; try{const j=await res.json(); d=(j.error&&j.error.message)||"";}catch(e){}
   if(res.status===403){loginButton.classList.remove("hidden");flash("ERROR 403: "+d+" (TAP CONNECT TO RECONNECT)");}
@@ -388,6 +442,7 @@ async function failMsg(res){
   else if(res.status===401)logout();
   else flash("ERROR "+res.status+" "+d);
 }
+
 async function cmd(method,path,body){
   if(!accessToken){flash("NOT LOGGED IN - TAP CONNECT");return false;}
   try{
@@ -398,7 +453,7 @@ async function cmd(method,path,body){
   }catch(e){flash("CONNECTION ERROR: "+e);return false;}
 }
 
-/* ---------- now playing ---------- */
+/* ---------- playback ---------- */
 const artistsOf=t=>(t.artists||[]).map(a=>a.name).join(", ");
 function statusText(t){return (t.is_playing?"PLAYING":"PAUSED")+(t.device&&t.device.name?" \u00b7 "+t.device.name.toUpperCase():"");}
 function syncToggle(){const p=!!(currentTrack&&currentTrack.is_playing);toggleBtn.textContent=p?"PAUSE":"PLAY";sceneRun(p);}
@@ -414,6 +469,7 @@ function showNothing(){
   title.textContent="Nothing Playing"; artist.textContent=""; album.textContent="";
   status.textContent="NOT PLAYING"; progress.style.width="0%"; syncToggle();
 }
+
 async function checkLiked(id){
   try{
     let res=await api("GET","/me/library/contains?uris="+encodeURIComponent("spotify:track:"+id));
@@ -421,6 +477,7 @@ async function checkLiked(id){
     if(res.ok){const a=await res.json();if(currentTrackId===id)setLiked(!!a[0]);}
   }catch(e){}
 }
+
 async function updateSong(t){
   if(!t||!t.item){showNothing();return;}
   const it=t.item, imgs=(it.album&&it.album.images)||[];
@@ -438,6 +495,7 @@ async function updateSong(t){
     if(url){ setLabel(url,first); extractPalette(url); }
   }
 }
+
 async function getPlayback(){
   if(!accessToken)return;
   try{
@@ -448,13 +506,14 @@ async function getPlayback(){
     await updateSong(await res.json());
   }catch(err){console.error(err);status.textContent="CONNECTION ERROR";}
 }
+
 setInterval(()=>{
   if(!currentTrack||!currentTrack.item||!currentTrack.is_playing)return;
   const dur=currentTrack.item.duration_ms; if(!dur)return;
   progress.style.width=Math.min(100,((lastProgress+(Date.now()-lastProgressTime))/dur)*100)+"%";
 },500);
 
-/* ---------- buttons ---------- */
+/* ---------- UI Events ---------- */
 $("next").addEventListener("click",()=>cmd("POST","/me/player/next"));
 $("prev").addEventListener("click",()=>cmd("POST","/me/player/previous"));
 toggleBtn.addEventListener("click",()=>{
@@ -484,7 +543,7 @@ likeBtn.addEventListener("click",async()=>{
   }catch(e){flash("CONNECTION ERROR: "+e);}
 });
 
-/* ---------- panel: queue / devices ---------- */
+/* ---------- overlay panel ---------- */
 const queueEl=$("queue"), qlist=$("qlist");
 let panelTimer=null;
 function note(t){
@@ -531,7 +590,40 @@ $("qbtn").addEventListener("click",e=>{e.stopPropagation();openPanel("queue");})
 $("dbtn").addEventListener("click",e=>{e.stopPropagation();openPanel("devices");});
 queueEl.addEventListener("click",closePanel);
 
-/* ---------- start ---------- */
+/* ---------- Curved Arc Button Layout Calculation ---------- */
+function arc(btns, x0, x1, yEnd, sag, smile){
+  const n = btns.length, cx = (x0 + x1) / 2, half = (x1 - x0) / 2;
+  btns.forEach(function(b, i){
+    const u = n > 1 ? (i / (n - 1)) * 2 - 1 : 0;
+    const x = cx + u * half;
+    const y = smile ? yEnd + sag * (1 - u * u) : yEnd - sag * (1 - u * u);
+    const slope = (smile ? -2 : 2) * sag * u / half;
+    b.style.left = Math.round(x) + "px";
+    b.style.top = Math.round(y) + "px";
+    b.style.transform = "translate(-50%, -50%) rotate(" + (Math.atan(slope) * 180 / Math.PI).toFixed(1) + "deg)";
+  });
+}
+
+function layout(){
+  const W = window.innerWidth, H = window.innerHeight, land = W > H;
+  const bottom = [$("prev"), toggleBtn, $("next"), likeBtn];
+  const top = [shufBtn, repBtn, $("qbtn"), $("dbtn")];
+
+  if(land){
+    // In landscape, wrap buttons snugly around the oversized record curves
+    arc(bottom, W * 0.18, W * 0.82, H - 42, 38, true);
+    arc(top, W * 0.38, W * 0.88, 48, 28, false);
+  } else {
+    // In portrait, fit buttons comfortably along screen margins
+    arc(bottom, W * 0.12, W * 0.88, H - 54, 46, true);
+    arc(top, W * 0.10, W * 0.90, 76, 32, false);
+  }
+}
+window.addEventListener("resize", layout);
+window.addEventListener("orientationchange", function(){ setTimeout(layout, 300); });
+layout();
+
+/* ---------- Initialization ---------- */
 async function init(){
   const loggedIn=await checkCallback();
   if(!loggedIn){
